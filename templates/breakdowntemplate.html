@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+</head>
+<body>
+
+<h1>Results Breakdown</h1>
+<br>
+<br>
+
+
+<!-- Variable that updates with the HTML table from the web app code. "Safe" eliminates espace characters to render HTML-->
+<h3>Voter turnout by race</h3>
+{{race_table_input|safe}}
+
+<br>
+<br>
+<br>
+<br>
+
+<h3>Voter turnout by gender</h3>
+{{gender_table_input|safe}}
+
+<br>
+<br>
+<br>
+<br>
+
+<h3>Voter turnout by election year</h3>
+{{year_table_input|safe}}
+
+
+
+
+
+
+<!-- <table border="1"><tr><th>Results</th><td><table border="1"><tr><th>race</th><th>voting_rate</th></tr><tr><td>White</td><td>0.6</td></tr><tr><td>Black</td><td>0.6667</td></tr></table></td></tr></table>
+
+
+<br>
+<br>
+<br>
+
+<table border="1"><tr><th>Results</th><td><table border="1"><tr><th>race</th><th>voting_rate</th></tr><tr><td>White</td><td>0.6</td></tr><tr><td>Black</td><td>0.6667</td></tr></table></td></tr></table> -->
+
+
+
+
+</body>
+</html>
+
+
+</body>
+</html>
