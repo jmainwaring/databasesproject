@@ -75,6 +75,8 @@ def query():
 	user_text = request.form.get("textbox")
 
 
+
+
 	db = MySQLdb.connect("mysql-server", "root", "secret", "mydb")
 	cursor = db.cursor()
 
@@ -84,6 +86,7 @@ def query():
 	####Tim#### - main thing I need help with here is figuring out exactly what comes
 	# from this request.form.get() thing, and why it doesn't appear to only be the 
 	# query. Seems to have additional info, e.g., "Submit", which is why query doesn't run 
+
 
 
 
@@ -104,7 +107,12 @@ def query():
 		
 	
 	user_answer_table = cursor.fetchall()	
+
 	return render_template('query.html', query_result=user_answer_table)
+		
+
+
+
 
 
 
