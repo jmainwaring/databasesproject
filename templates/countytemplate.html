@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+</head>
+<body>
+
+<h1>County Breakdown</h1>
+<br>
+<br>
+
+
+
+<h4>Please select a county name:</h4>
+<form name="CountyForm" method="POST" action="/county_breakdown">
+	<select name="county_select" onchange="this.form.submit()">
+		{% for county in dropdown_list %}
+		  <option value="{{county}}" {% if county == selected_county %} selected="selected" {% endif %} >{{county}}</option>
+		{% endfor %}
+	</select>
+</form>
+
+
+
+<br>
+<br>
+
+
+<!-- Variable that updates with the HTML table from the web app code. "Safe" eliminates espace characters to render HTML -->
+<h3>2016 County-level voter turnout</h3>
+{{county_table_input|safe}}
+
+
+</body>
+</html>
+
+
+</body>
+</html>
