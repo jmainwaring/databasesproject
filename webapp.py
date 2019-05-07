@@ -65,6 +65,48 @@ def results():
 
 
 
+@app.route('/query', methods=["GET", "POST"])
+def query():
+	"""
+	Page with that allows users to enter their own query         
+	"""
+
+	# Getting the query
+	user_text = request.form.get("text")
+
+
+	db = MySQLdb.connect("mysql-server", "root", "secret", "mydb")
+	cursor = db.cursor()
+
+
+
+
+	####Tim#### - main thing I need help with here is figuring out exactly what comes
+	# from this request.form.get() thing, and why it doesn't appear to only be the 
+	# query. Seems to have additional info, e.g., "Submit", which is why query doesn't run 
+
+
+
+
+	# Default for before a user enters their own query 
+	if user_text is None:
+		user_query = "SELECT ncid FROM voters LIMIT 1"
+		user_answer = cursor.execute(user_query)
+
+
+	# Running the query 
+	else:
+		user_query = re.findall(r'(SELECT[^;]*)', user_text)[0]
+		user_answer = cursor.execute("%s", (user_query,))
+		
+	
+	user_answer_table = cursor.fetchall()	
+	return render_template('query.html', query_result=user_answer_table)		
+
+
+
+
+
 
 @app.route('/table_breakdown', methods=["GET"])
 def table_breakdown():

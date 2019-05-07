@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+</head>
+<body>
+
+<h1>Query executor</h1>
+<br>
+<br>
+
+
+
+<form name="queryform" method="POST">
+   Please enter your query below (make sure to include a semi-colon at the end):
+   <br>
+   <textarea rows = "8" cols = "80" name = "description">
+   </textarea><br>
+   <input name = "text" type = "submit"> 
+</form>
+
+
+
+
+<br>
+<br>
+
+
+
+<!-- Variable that updates with the HTML table from the web app code. "Safe" eliminates espace characters to render HTML -->
+<h3>Results:</h3>
+{{query_result|safe}}
+
+
+</body>
+</html>
+
+
+</body>
+</html>
