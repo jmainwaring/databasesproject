@@ -47,7 +47,7 @@ def format_county_result(result):
 @app.route('/')
 def homepage():
 	"""
-	Homepage with link to three other areas         
+	Homepage with link to four other pages         
 	"""
 
 	return render_template('homepage.html')
@@ -57,7 +57,7 @@ def homepage():
 @app.route('/results')
 def results():
 	"""
-	Page with results         
+	Page with results from our study        
 	"""
 
 	return render_template('results.html')
@@ -68,29 +68,15 @@ def results():
 @app.route('/query', methods=["GET", "POST"])
 def query():
 	"""
-	Page with that allows users to enter their own query         
+	Page that allows users to execute their own query         
 	"""
 
-	# Getting the query
-	user_text = request.form.get("textbox")
-
-
+	# Getting the query text
+	user_text = request.form.get("description")
 
 
 	db = MySQLdb.connect("mysql-server", "root", "secret", "mydb")
 	cursor = db.cursor()
-
-
-
-
-	####Tim#### - main thing I need help with here is figuring out exactly what comes
-	# from this request.form.get() thing, and why it doesn't appear to only be the 
-	# query. Seems to have additional info, e.g., "Submit", which is why query doesn't run 
-
-
-
-
-	# Getting closer
 
 
 	# Default for before a user enters their own query 
@@ -101,9 +87,7 @@ def query():
 
 	# Running the query 
 	else:
-		user_query = user_text
-		# user_query = re.findall(r'(SELECT[^;]*)', user_text)[0]
-		user_answer = cursor.execute("%s", (user_query,))
+		user_answer = cursor.execute(user_text)
 		
 	
 	user_answer_table = cursor.fetchall()	
@@ -127,25 +111,74 @@ def table_breakdown():
 	cursor = db.cursor()
 
 	# Getting HTML table for race breakdown
-	race_answer = cursor.execute("SELECT race, AVG(voted) FROM voters GROUP BY race")
+	race_answer = cursor.execute("""
+		WITH voted_table AS (
+			SELECT voters.ncid, 
+				CASE WHEN voting_method IS NULL THEN 0 ELSE 1 END AS voted,
+				CASE 
+					WHEN race_code = 'W' THEN 'White' 
+					WHEN race_code = 'B' THEN 'African American/Black'
+					WHEN race_code = 'M' THEN 'Multiracial' 
+					WHEN race_code = 'I' THEN 'American Indian/Alaska Native' 
+					WHEN race_code = 'A' THEN 'Asian' 
+					WHEN race_code = 'U' THEN 'Native Hawaiian/Pacific Islander' 
+					ELSE 'Other' END AS race     
+			FROM voters 
+			LEFT JOIN vhist
+				ON voters.ncid=vhist.ncid)
+
+			SELECT race, CONCAT(ROUND(AVG(voted)*100, 1), '%')   
+			FROM voted_table
+			GROUP BY race
+			ORDER BY race;""")
+
 	race_answer_table = cursor.fetchall()
 	race_formatted_answers = format_voterate_result(race_answer_table, col_to_format='race')
 	race_html_table = json2html.convert(json=race_formatted_answers)
 
 
 	# Getting HTML table for gender breakdown
-	gender_answer = cursor.execute("SELECT gender, AVG(voted) FROM voters GROUP BY gender")
+	gender_answer = cursor.execute("""
+		WITH voted_table AS (
+			SELECT voters.ncid, 
+				CASE WHEN voting_method IS NULL THEN 0 ELSE 1 END AS voted, 
+				CASE WHEN gender_code = 'f' THEN 'Female' ELSE 'Male' END AS gender   
+			FROM voters 
+			LEFT JOIN vhist
+				ON voters.ncid=vhist.ncid)
+
+			SELECT gender, CONCAT(ROUND(AVG(voted)*100, 1), '%')    
+			FROM voted_table
+			GROUP BY gender
+			ORDER BY gender;""")
+
 	gender_answer_table = cursor.fetchall()
 	gender_formatted_answers = format_voterate_result(gender_answer_table, col_to_format='gender')
 	gender_html_table = json2html.convert(json=gender_formatted_answers)
 
 
-	# Getting HTML table for year breakdown
-	year_answer = cursor.execute("SELECT year, AVG(voted) FROM voters GROUP BY year")
-	year_answer_table = cursor.fetchall()
-	year_formatted_answers = format_voterate_result(year_answer_table, col_to_format='year')
-	year_html_table = json2html.convert(json=year_formatted_answers)
+	# Getting HTML table for age breakdown
+	year_answer = cursor.execute("""
+		WITH voted_table AS (
+			SELECT voters.ncid, 
+				CASE WHEN voting_method IS NULL THEN 0 ELSE 1 END AS voted,
+				CASE 
+					WHEN birth_year < 1944 THEN '70+' 
+					WHEN birth_year >= 1944 AND birth_year < 1964 THEN '50-69' 
+					WHEN birth_year >= 1964 AND birth_year < 1984 THEN '30-49'
+					ELSE '30 or younger' END AS age
+			FROM voters 
+			LEFT JOIN vhist
+				ON voters.ncid=vhist.ncid)
 
+			SELECT age, CONCAT(ROUND(AVG(voted)*100, 1), '%')  
+			FROM voted_table
+			GROUP BY age
+			ORDER BY age;""")
+
+	year_answer_table = cursor.fetchall()
+	year_formatted_answers = format_voterate_result(year_answer_table, col_to_format='age')
+	year_html_table = json2html.convert(json=year_formatted_answers)
 
 
 	return render_template('breakdowntemplate.html', race_table_input=race_html_table, 
@@ -155,11 +188,10 @@ def table_breakdown():
 
 
 
-
 @app.route('/county_breakdown', methods=["GET", "POST"])
 def county_breakdown():
 	"""
-	Tables with percentage breakdowns by race, gender, and election year         
+	Tables with percentage breakdowns by county         
 	"""
 
 
@@ -168,7 +200,7 @@ def county_breakdown():
 
 
 	# Getting a list of all the counties
-	all_counties = cursor.execute("SELECT DISTINCT county FROM voters ORDER BY county")
+	all_counties = cursor.execute("SELECT DISTINCT name FROM counties ORDER BY name")
 	all_counties_result = cursor.fetchall()
 
 	county_list = []
@@ -181,118 +213,33 @@ def county_breakdown():
 
 
 	# Getting HTML table	
-	# Change to Alamance
-	specific_county = 'Haywood'
+	specific_county = 'ALAMANCE'
 	specific_county_input = request.form.get('county_select')
 
 
+	# Default, in the case that none are selected 
 	if specific_county_input != None:
-	# Default, in the case that none are selected (should replace Haywood with the first NC county) 
 		specific_county = specific_county_input
 
-	county_answer = cursor.execute("SELECT county, AVG(voted) FROM voters WHERE county= %s", (specific_county,))
+	county_answer = cursor.execute("""
+					WITH voted_table AS (
+						SELECT voters.ncid, c.county_id, name, CASE WHEN voting_method IS NULL THEN 0 ELSE 1 END AS voted 
+						FROM voters 
+						LEFT JOIN vhist
+							ON voters.ncid=vhist.ncid
+						JOIN counties c
+							ON voters.county_id = c.county_id
+						WHERE name = %s)
+
+					SELECT name AS county, AVG(voted)   
+					FROM voted_table
+					GROUP BY name
+					ORDER BY name""", (specific_county,))
+
 	county_answer_table = cursor.fetchall()
 	county_formatted_answers = format_county_result(county_answer_table)
 	county_html_table = json2html.convert(json=county_formatted_answers)	
+
+	
 	return render_template('countytemplate.html', county_table_input=county_html_table, dropdown_list=dropdown_list, 
 							selected_county = specific_county)		
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@app.route('/questions', methods=["GET"])
-def show_questions():
-	"""
-	Show a user all questions           
-	"""
-
-
-	db = MySQLdb.connect("mysql-server", "root", "secret", "mydb")
-	cursor = db.cursor()
-	answer = cursor.execute("SELECT * FROM questions")
-	answer_table = cursor.fetchall()
-
-
-	formatted_answers = format_result(answer_table)
-	data = {"Questions": formatted_answers}
-	resp = Response(json.dumps(data), mimetype='application/json', status=200)
-	return resp
-
-
-
-
-
-
-@app.route('/answer', methods=["POST"])
-def answer():
-	"""
-	Takes user the input and lets them select/answer a question   
-	"""
-
-
-	question_id = request.json["question_id"] 
-	user_query = request.json["user_query"]
-	is_correct = False
-
-
-	db = MySQLdb.connect("mysql-server", "root", "secret", "mydb")
-	cursor = db.cursor()
-	user_result = cursor.execute(user_query)
-
-	# Error handling for results with no rows 
-	if cursor.rowcount == 0:
-		data = {"Is correct": is_correct, "Problem": "No rows returned"}
-		resp = Response(json.dumps(data), mimetype='application/json', status=200)
-		return resp
-
-
-	user_full_table = cursor.fetchall()[0][0]
-
-
-
-	correct_query_command = cursor.execute("SELECT correct_query FROM answers WHERE question_id = %s", (int(question_id),))
-	correct_query = cursor.fetchall()[0][0]
-	correct_result = cursor.execute(correct_query)
-	correct_full_table = cursor.fetchall()[0][0]
-
-
-
-	# Checking to see if the answers are equal 
-	if user_full_table == correct_full_table:
-		is_correct = True
-		send_tweet(question_id)  
-
-
-
-	# Updating the completion status table
-	sql = "UPDATE questions SET completed = %s WHERE id = %s"
-	args = ("true", int(question_id))
-	cursor.execute(sql, args)
-	db.commit()
-	db.close()
-
-
-
-
-	data = {"User answer": user_full_table, "Correct answer": correct_full_table, "Is correct": is_correct}
-	resp = Response(json.dumps(data), mimetype='application/json', status=200)
-	return resp
-
-

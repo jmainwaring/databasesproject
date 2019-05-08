@@ -29,13 +29,12 @@ tr:nth-child(even) {
 
 
 <form name="queryform" method="POST">
-   Please enter your query below (make sure to include a semi-colon at the end):
+   Please enter your query below:
    <br>
-   <textarea rows="8" cols="80" name="description">
+   <textarea rows = "8" cols = "80" name = "description">
    </textarea><br>
-   <input name="text" type="submit"> 
+   <input name = "text" type = "submit"> 
 </form>
-
 
 
 
@@ -46,10 +45,55 @@ tr:nth-child(even) {
 
 
 <!-- Variable that updates with the HTML table from the web app code. "Safe" eliminates espace characters to render HTML -->
-<h3>Input text:</h3>
-{{user_answer_table|safe}}
+<h3>Results:</h3>
+{{query_result|safe}}
 
 
+
+
+<br>
+<br>
+<br>
+
+<h3>Table names and column descriptions:</h3>
+
+
+
+<h5>voters</h5>
+<img src="https://imgur.com/2GBYcbD.png" alt="Voters" style="width:500px;height:300px;"/>  
+<br>
+
+
+<h5>counties</h5>
+<img src="https://i.imgur.com/C6nR8FS.png" alt="Counties" style="width:500px;height:100px;"/>  
+<br>
+
+<h5>precincts</h5>
+<img src="https://i.imgur.com/yGwNjo9.png" alt="Precincts" style="width:500px;height:110px;"/>  
+<br>
+
+<h5>municipalities</h5>
+<img src="https://i.imgur.com/Rm9zROX.png" alt="Municipalities" style="width:500px;height:110px;"/>  
+<br>
+
+<h5>wards</h5>
+<img src="https://i.imgur.com/zFyHZcx.png" alt="Wards" style="width:500px;height:110px;"/>  
+<br>
+
+<h5>vhist (Voter History)</h5>
+<img src="https://imgur.com/2GBYcbD.png" alt="Vhist" style="width:500px;height:280px;"/>  
+<br>
+
+<h5>parties</h5>
+<img src="https://i.imgur.com/rg4nISJ.png" alt="Parties" style="width:500px;height:90px;"/>  
+<br>
+
+
+<br>
+<br>
+<h5>Below is the ERD to see how the entities generally relate to one another:</h5>
+<img src="https://i.imgur.com/JkQV9wP.png" alt="ERD" style="width:800px;height:550px;"/>  
+<br>
 
 
 
